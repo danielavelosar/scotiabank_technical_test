@@ -3,6 +3,9 @@ package com.scotiabank.scotiabank_test.web.controller;
 import com.scotiabank.scotiabank_test.domain.service.ProductService;
 import com.scotiabank.scotiabank_test.persistence.entity.Product;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,25 +19,37 @@ public class ProductController {
     ProductService productService;
 
     @GetMapping("/all")
-    public List<Product> getAll(){
-        return productService.getAll();
+    public ResponseEntity<List<Product>> getAll(){
+        return new ResponseEntity<>(productService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public Optional<Product> getProductById(@PathVariable("id") int idProduct){
-        return productService.getProductById(idProduct);
+    public ResponseEntity<Product> getProductById(@PathVariable("id") int idProduct){
+        return productService.getProductById(idProduct)
+                .map(product -> new ResponseEntity<>(product, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     @PutMapping("/update")
-    public boolean update(@RequestBody Product product){
-        return  productService.update(product);
+    public ResponseEntity update(@RequestBody Product product){
+        if( productService.update(product)) {
+            return new ResponseEntity(HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
     }
     @PostMapping("/save")
-    public Product save(@RequestBody Product product){
-        return productService.save(product);
+    public ResponseEntity<Product>  save(@RequestBody Product product){
+        return new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
     }
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable("id") int productId){
-        return productService.delete(productId);
+    public ResponseEntity delete(@PathVariable("id") int productId){
+        if (productService.delete(productId)){
+            return new ResponseEntity(HttpStatus.OK);
+        }
+        else{
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
 
 
     }
